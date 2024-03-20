@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.20;
 
-import "fhevm/abstracts/Reencrypt.sol";
-import "fhevm/lib/TFHE.sol";
-import "@openzeppelin/contracts/access/Ownable2Step.sol";
+import "../../../../../../node_modules/fhevm/abstracts/Reencrypt.sol";
+import "../../../../../../node_modules/fhevm/lib/TFHE.sol";
+import "../../../../../../node_modules/@openzeppelin/contracts/access/Ownable2Step.sol";
 
 contract ConfidentialERC20 is Reencrypt, Ownable2Step {
     event Transfer(address indexed from, address indexed to);
