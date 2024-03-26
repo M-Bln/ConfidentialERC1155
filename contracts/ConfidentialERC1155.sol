@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "fhevm/lib/TFHE.sol";
 
 // Define a user-defined type for additional data associated with each token
 struct TokenData {
@@ -14,7 +15,7 @@ contract ConfidentialERC1155 is ERC1155, Ownable {
     // Mapping from token ID to additional data
     mapping(uint256 => TokenData) private _tokenData;
 
-    constructor(string memory uri) ERC1155(uri) {}
+    constructor(string memory uri) ERC1155(uri) Ownable(msg.sender) {}
 
     // Function to mint new tokens with additional data
     function mintWithConfidentialData(
@@ -31,15 +32,5 @@ contract ConfidentialERC1155 is ERC1155, Ownable {
     // Function to get the additional data associated with a token
     function getTokenData(uint256 tokenId) external view returns (TokenData memory) {
         return _tokenData[tokenId];
-    }
-
-    // Override the _mint function to prevent direct minting without additional data
-    function _mint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) internal override {
-        revert("Minting with additional data required");
     }
 }
