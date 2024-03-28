@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 struct TokenData {
     //    uint256 tokenId;
     euint32 x;
+    bool alreadySet;
 }
 
 contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
@@ -26,8 +27,11 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes calldata confidentialData,
         bytes memory data
     ) external onlyOwner {
-        super._mint(account, tokenId, amount, data);
-        _tokenData[tokenId] = TokenData(TFHE.asEuint32(confidentialData));
+        //require(!_tokenData[tokenId].alreadySet, "Confidential data already set for this tokenId");
+	if (!_tokenData[tokenId].alreadySet) {
+	    super._mint(account, tokenId, amount, data);
+	    _tokenData[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
+	}
     }
 
     function getConfidentialData(
