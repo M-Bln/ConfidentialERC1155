@@ -28,10 +28,10 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes memory data
     ) external onlyOwner {
         //require(!_tokenData[tokenId].alreadySet, "Confidential data already set for this tokenId");
-	if (!_tokenData[tokenId].alreadySet) {
-	    super._mint(account, tokenId, amount, data);
-	    _tokenData[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
-	}
+        if (!_tokenData[tokenId].alreadySet) {
+            super._mint(account, tokenId, amount, data);
+            _tokenData[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
+        }
     }
 
     function getConfidentialData(

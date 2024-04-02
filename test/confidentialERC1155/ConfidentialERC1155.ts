@@ -50,6 +50,25 @@ describe("ConfidentialERC1155", function () {
     expect(data).to.equal(787);
   });
 
+  it("should not access confidential data", async function () {
+    const encryptedData = this.instances.alice.encrypt32(787);
+    const transaction = await this.erc1155.mintWithConfidentialData(
+      this.signers.alice.address,
+      0,
+      1000,
+      encryptedData,
+      encryptedData,
+    );
+    await transaction.wait();
+
+    const bobErc1155 = this.erc1155.connect(this.signers.bob);
+    const tokenBob = this.instances.bob.getPublicKey(this.contractAddress)!;
+
+    const returnedEncryptedData = await bobErc1155.getConfidentialData(0, tokenBob.publicKey, tokenBob.signature);
+    const data = this.instances.bob.decrypt(this.contractAddress, returnedEncryptedData);
+    expect(data).to.equal(0);
+  });
+
   it("should not re-mint already set confidential data", async function () {
     const encryptedData1 = this.instances.alice.encrypt32(787);
     const transaction1 = await this.erc1155.mintWithConfidentialData(
