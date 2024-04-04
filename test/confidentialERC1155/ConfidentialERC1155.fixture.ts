@@ -7,7 +7,7 @@ export async function deployEncryptedERC1155Fixture(): Promise<ConfidentialERC11
   const signers = await getSigners();
 
   const contractFactory = await ethers.getContractFactory("ConfidentialERC1155");
-  const contract = await contractFactory.connect(signers.alice).deploy("contractURI"); // City of Zama's battle
+  const contract = await contractFactory.connect(signers.alice).deploy("contractURI");
   await contract.waitForDeployment();
 
   return contract;

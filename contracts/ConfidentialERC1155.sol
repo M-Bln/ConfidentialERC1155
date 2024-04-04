@@ -14,8 +14,10 @@ struct TokenData {
 }
 
 contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
+    error DataAlreadySet(uint256 tokenId);
+    error RequirePositiveBalance(uint256 tokenId);
     // Mapping from token ID to additional data
-    mapping(uint256 tokenId => TokenData tokenData) private _tokenData;
+    mapping(uint256 tokenId => TokenData tokenData) private _tokenDatas;
 
     constructor(string memory uri) ERC1155(uri) Ownable(msg.sender) {}
 
@@ -25,13 +27,14 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         uint256 tokenId,
         uint256 amount,
         bytes calldata confidentialData,
-        bytes memory data
+        bytes memory metaData
     ) external onlyOwner {
-        //require(!_tokenData[tokenId].alreadySet, "Confidential data already set for this tokenId");
-        if (!_tokenData[tokenId].alreadySet) {
-            super._mint(account, tokenId, amount, data);
-            _tokenData[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
+        if (_tokenDatas[tokenId].alreadySet) {
+            revert DataAlreadySet(tokenId);
         }
+        // require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
+        super._mint(account, tokenId, amount, metaData);
+        _tokenDatas[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
     }
 
     function getConfidentialData(
@@ -39,14 +42,15 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes32 publicKey,
         bytes calldata signature
     ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes memory) {
-        if (balanceOf(msg.sender, tokenId) > 0) {
-            return TFHE.reencrypt(_tokenData[tokenId].x, publicKey, 0);
-        } else {
-            return TFHE.reencrypt(TFHE.asEuint32(0), publicKey, 0);
+        if (balanceOf(msg.sender, tokenId) <= 0) {
+            revert RequirePositiveBalance(tokenId);
         }
+        //require(balanceOf(msg.sender, tokenId) > 0, "Require positive balance to access confidential data");
+        return TFHE.reencrypt(_tokenDatas[tokenId].x, publicKey, 0);
     }
+
     // Function to get the additional data associated with a token
     function getTokenData(uint256 tokenId) external view returns (TokenData memory) {
-        return _tokenData[tokenId];
+        return _tokenDatas[tokenId];
     }
 }
