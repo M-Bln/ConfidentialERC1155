@@ -13,7 +13,7 @@ export function MintNFT() {
       address: "0xF161F15261233Db423ba1D12eDcc086fa37AF4f3",
       abi,
       functionName: "mintWithConfidentialData",
-      args: ["0xf0A5B532fc2A5D8E324Cc2D7c61DBFdC100D391e", 0, 1500, "0x", "0x"],
+      args: ["0xf0A5B532fc2A5D8E324Cc2D7c61DBFdC100D391e", BigInt(0), BigInt(1500), "0x", "0x"],
     });
   }
 
