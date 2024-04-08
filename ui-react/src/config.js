@@ -1,10 +1,23 @@
 import { defineChain } from "viem";
 import { createConfig, http } from "wagmi";
+import { Chain } from "wagmi/chains";
 import { injected, metaMask, safe, walletConnect } from "wagmi/connectors";
 
-const projectId = "<WALLETCONNECT_PROJECT_ID>";
+//const projectId = "<WALLETCONNECT_PROJECT_ID>";
+// const fheLocalhost = defineChain({
+//   id: 9_000,
+//   name: "fheLocalhost",
+//   nativeCurrency: {
+//     decimals: 18,
+//     name: "tEVMOS",
+//     symbol: "TEVMOS",
+//   },
+//   rpcUrls: {
+//     default: { http: ["http://127.0.0.1:8545"] },
+//   },
+// });
 
-const fheLocalhost = defineChain({
+const fheLocalhost = {
   id: 9_000,
   name: "fheLocalhost",
   nativeCurrency: {
@@ -15,7 +28,7 @@ const fheLocalhost = defineChain({
   rpcUrls: {
     default: { http: ["http://127.0.0.1:8545"] },
   },
-});
+};
 
 const metaMaskConnector = injected({ target: "metaMask" });
 

@@ -1,4 +1,4 @@
-import { abi } from "./abi.ts";
+import { abi } from "./abi";
 import * as React from "react";
 import { useWriteContract } from "wagmi";
 
