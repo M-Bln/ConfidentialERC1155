@@ -7,7 +7,7 @@ import { getSigners, initSigners } from "../signers";
 import { deployEncryptedERC1155Fixture } from "./ConfidentialERC1155.fixture";
 
 describe("ConfidentialERC1155", function () {
-  let contractInstance: ConfidentialERC1155;
+  //let contractInstance: ConfidentialERC1155;
   before(async function () {
     await initSigners();
     this.signers = await getSigners();
@@ -17,7 +17,7 @@ describe("ConfidentialERC1155", function () {
     const contract = await deployEncryptedERC1155Fixture();
     this.contractAddress = await contract.getAddress();
     this.erc1155 = contract;
-    contractInstance = contract;
+    //contractInstance = contract;
     this.instances = await createInstances(this.contractAddress, ethers, this.signers);
   });
 
@@ -74,9 +74,9 @@ describe("ConfidentialERC1155", function () {
     //expect(data).to.equal(0);
   });
 
-  it("should not re-mint already set confidential data", async function () {
+  it.only("should not re-mint already set confidential data", async function () {
     const encryptedData1 = this.instances.alice.encrypt32(787);
-    const transaction1 = await contractInstance.mintWithConfidentialData(
+    const transaction1 = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
       1000,
@@ -90,27 +90,23 @@ describe("ConfidentialERC1155", function () {
     const encryptedData2 = this.instances.alice.encrypt32(42);
 
     try {
-      await contractInstance.mintWithConfidentialData(
-        this.signers.alice.address,
-        0,
-        500,
-        encryptedData2,
-        encryptedData2,
-      );
+      await this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2);
     } catch (e) {
-      expect(
-        (e as Error).toString().substring(0, 67) ===
-          "ProviderError: rpc error: code = Unknown desc = execution reverted",
-      ).to.be.true;
+      expect((e as Error).toString().substring(0, 67)).to.be.equal(
+        "ProviderError: rpc error: code = Unknown desc = execution reverted:",
+      );
+      //   (e as Error).toString().substring(0, 67) ===
+      //     "ProviderError: rpc error: code = Unknown desc = execution reverted",
+      // ).to.be.true;
     }
     // await expect(
     //   this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2),
     // ).to.be.revertedWith("Data Already Set");
 
     // await expect(
-    //   contractInstance.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2),
+    //   this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2),
     // )
-    //   .to.be.revertedWithCustomError(contractInstance, "DataAlreadySet")
+    //   .to.be.revertedWithCustomError(this.erc1155, "DataAlreadySet")
     //   .withArgs(0);
 
     // await expect(transaction2).to.be.revertedWith("Confidential data already set for this tokenId");

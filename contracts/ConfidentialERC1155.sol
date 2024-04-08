@@ -29,10 +29,10 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes calldata confidentialData,
         bytes memory metaData
     ) external onlyOwner {
-        if (_tokenDatas[tokenId].alreadySet) {
-            revert DataAlreadySet(tokenId);
-        }
-        // require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
+        /* if (_tokenDatas[tokenId].alreadySet) { */
+        /*     revert DataAlreadySet(tokenId); */
+        /* } */
+        require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
         super._mint(account, tokenId, amount, metaData);
         _tokenDatas[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
     }
