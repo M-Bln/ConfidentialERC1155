@@ -2,12 +2,19 @@ extends:
   - "eslint:recommended"
   - "plugin:@typescript-eslint/eslint-recommended"
   - "plugin:@typescript-eslint/recommended"
+  - "plugin:react/recommended"  
   - "prettier"
 parser: "@typescript-eslint/parser"
 parserOptions:
+  ecmaVersion: 2020
+  sourceType: module
   project: "tsconfig.json"
 plugins:
   - "@typescript-eslint"
+    - "react"
+settings:
+  react:
+    version: "detect"
 root: true
 rules:
   "@typescript-eslint/no-floating-promises":

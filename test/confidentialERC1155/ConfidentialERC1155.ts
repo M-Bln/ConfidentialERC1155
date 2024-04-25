@@ -74,7 +74,7 @@ describe("ConfidentialERC1155", function () {
     //expect(data).to.equal(0);
   });
 
-  it.only("should not re-mint already set confidential data", async function () {
+  it("should not re-mint already set confidential data", async function () {
     const encryptedData1 = this.instances.alice.encrypt32(787);
     const transaction1 = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
