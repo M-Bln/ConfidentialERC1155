@@ -20,12 +20,25 @@ describe("ConfidentialERC1155", function () {
     //contractInstance = contract;
     this.instances = await createInstances(this.contractAddress, ethers, this.signers);
   });
+  // it("should mint the contract", async function () {
+  //   const encryptedData = this.instances.alice.encrypt32(777);
+  //   const transaction = await this.erc1155.mintWithConfidentialData(
+  //     this.signers.alice.address,
+  //     0,
+  //     1000,
+  //     encryptedData,
+  //     encryptedData,
+  //   );
+  //   await transaction.wait();
+  //   const balance = await this.erc1155.balanceOf(this.signers.alice.address, 0);
+  //   expect(balance).to.equal(1000);
+  // });
 
-  it.only("should mint the contract", async function () {
-    const encryptedData1 = this.instances.alice.encrypt32(777);
-    const encryptedData2 = this.instances.alice.encrypt32(778);
-    const encryptedData3 = this.instances.alice.encrypt32(779);
-    const encryptedData4 = this.instances.alice.encrypt32(780);
+  it("should mint the contract", async function () {
+    const encryptedData1 = this.instances.alice.encrypt64(777);
+    const encryptedData2 = this.instances.alice.encrypt64(778);
+    const encryptedData3 = this.instances.alice.encrypt64(779);
+    const encryptedData4 = this.instances.alice.encrypt64(780);
     const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
     try {
       const transaction = await this.erc1155.mintWithConfidentialData(
@@ -44,10 +57,10 @@ describe("ConfidentialERC1155", function () {
   });
 
   it("should access confidential data", async function () {
-    const encryptedData1 = this.instances.alice.encrypt32(787);
-    const encryptedData2 = this.instances.alice.encrypt32(788);
-    const encryptedData3 = this.instances.alice.encrypt32(789);
-    const encryptedData4 = this.instances.alice.encrypt32(790);
+    const encryptedData1 = this.instances.alice.encrypt64(787);
+    const encryptedData2 = this.instances.alice.encrypt64(788);
+    const encryptedData3 = this.instances.alice.encrypt64(789);
+    const encryptedData4 = this.instances.alice.encrypt64(790);
     const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
@@ -99,10 +112,10 @@ describe("ConfidentialERC1155", function () {
 
   it("should not access confidential data", async function () {
     //    const encryptedData = this.instances.alice.encrypt32(787);
-    const encryptedData1 = this.instances.alice.encrypt32(787);
-    const encryptedData2 = this.instances.alice.encrypt32(788);
-    const encryptedData3 = this.instances.alice.encrypt32(789);
-    const encryptedData4 = this.instances.alice.encrypt32(790);
+    const encryptedData1 = this.instances.alice.encrypt64(787);
+    const encryptedData2 = this.instances.alice.encrypt64(788);
+    const encryptedData3 = this.instances.alice.encrypt64(789);
+    const encryptedData4 = this.instances.alice.encrypt64(790);
     const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
@@ -125,10 +138,10 @@ describe("ConfidentialERC1155", function () {
 
   it("should not re-mint already set confidential data", async function () {
     //    const encryptedData1 = this.instances.alice.encrypt32(787);
-    const encryptedData1 = this.instances.alice.encrypt32(787);
-    const encryptedData2 = this.instances.alice.encrypt32(788);
-    const encryptedData3 = this.instances.alice.encrypt32(789);
-    const encryptedData4 = this.instances.alice.encrypt32(790);
+    const encryptedData1 = this.instances.alice.encrypt64(787);
+    const encryptedData2 = this.instances.alice.encrypt64(788);
+    const encryptedData3 = this.instances.alice.encrypt64(789);
+    const encryptedData4 = this.instances.alice.encrypt64(790);
     const encryptedDataArray1 = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
     const transaction1 = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
@@ -188,10 +201,10 @@ describe("ConfidentialERC1155", function () {
 
   it("should transfer tokens between two users", async function () {
     //const encryptedData = this.instances.alice.encrypt32(787);
-    const encryptedData1 = this.instances.alice.encrypt32(787);
-    const encryptedData2 = this.instances.alice.encrypt32(788);
-    const encryptedData3 = this.instances.alice.encrypt32(789);
-    const encryptedData4 = this.instances.alice.encrypt32(790);
+    const encryptedData1 = this.instances.alice.encrypt64(787);
+    const encryptedData2 = this.instances.alice.encrypt64(788);
+    const encryptedData3 = this.instances.alice.encrypt64(789);
+    const encryptedData4 = this.instances.alice.encrypt64(790);
     const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,

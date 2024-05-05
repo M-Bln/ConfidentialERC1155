@@ -1,12 +1,31 @@
-import { http, createConfig as wagmiCreateConfig } from "wagmi";
-import { base, mainnet } from "wagmi/chains";
-import { injected, safe } from "wagmi/connectors";
+import { type Chain } from "viem";
+import { createConfig, http } from "wagmi";
+import { injected, metaMask, safe, walletConnect } from "wagmi/connectors";
 
-export const config = wagmiCreateConfig({
-  chains: [mainnet, base],
+declare module "wagmi" {
+  interface Register {
+    config: typeof config;
+  }
+}
+
+const fheLocalhost: Chain = {
+  id: 9_000,
+  name: "fheLocalhost",
+  nativeCurrency: {
+    decimals: 18,
+    name: "tEVMOS",
+    symbol: "TEVMOS",
+  },
+  rpcUrls: {
+    default: { http: ["http://127.0.0.1:8545"] },
+  },
+};
+
+export const config = createConfig({
+  chains: [fheLocalhost],
   connectors: [injected(), safe()],
   transports: {
-    [mainnet.id]: http(),
-    [base.id]: http(),
+    [fheLocalhost.id]: http(),
+    //[base.id]: http(),
   },
 });

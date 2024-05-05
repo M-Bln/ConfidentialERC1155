@@ -44,8 +44,8 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes[] calldata confidentialData,
         bytes memory metaData
     ) external onlyOwner {
-        //require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
-        //require(confidentialData.length == 4, "Must provide four encrypted integers");
+        require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
+        require(confidentialData.length == 4, "Must provide four encrypted integers");
         super._mint(account, tokenId, amount, metaData);
         // Assuming TokenData is modified to accept an array of encrypted integers
         _tokenDatas[tokenId] = TokenData(
