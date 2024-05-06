@@ -6,36 +6,26 @@ import "fhevm/lib/TFHE.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
-// Define a user-defined type for additional data associated with each token
-struct TokenData {
-    //    uint256 tokenId;
-    euint64[4] confidentialData;
-    bool alreadySet;
-}
-
 contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
+    // Event to log first minting for this tokenId, when confidential data is set once and for all
+    event FirstMint(uint256 tokenId, address indexed to, uint256 amount, bytes metaData);
+
+    // Event to log further minting for this tokenId, confidential data remains the same
+    event ReMint(uint256 tokenId, address indexed to, uint256 amount, bytes metaData);
+
     error DataAlreadySet(uint256 tokenId);
-    error RequirePositiveBalance(uint256 tokenId);
+    error RequireOneToken(uint256 tokenId);
+
+    // Additional data associated with each token
+    struct TokenData {
+        euint64[4] confidentialData;
+        bool alreadySet;
+    }
+
     // Mapping from token ID to additional data
     mapping(uint256 tokenId => TokenData tokenData) private _tokenDatas;
 
     constructor(string memory uri) ERC1155(uri) Ownable(msg.sender) {}
-
-    // Function to mint new tokens with additional data
-    // function mintWithConfidentialData(
-    //     address account,
-    //     uint256 tokenId,
-    //     uint256 amount,
-    //     bytes calldata confidentialData,
-    //     bytes memory metaData
-    // ) external onlyOwner {
-    //     /* if (_tokenDatas[tokenId].alreadySet) { */
-    //     /*     revert DataAlreadySet(tokenId); */
-    //     /* } */
-    //     require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
-    //     super._mint(account, tokenId, amount, metaData);
-    //     _tokenDatas[tokenId] = TokenData(TFHE.asEuint32(confidentialData), true);
-    // }
 
     function mintWithConfidentialData(
         address account,
@@ -47,7 +37,6 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
         require(confidentialData.length == 4, "Must provide four encrypted integers");
         super._mint(account, tokenId, amount, metaData);
-        // Assuming TokenData is modified to accept an array of encrypted integers
         _tokenDatas[tokenId] = TokenData(
             [
                 TFHE.asEuint64(confidentialData[0]),
@@ -57,6 +46,13 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
             ],
             true
         );
+        emit FirstMint(tokenId, account, amount, metaData);
+    }
+
+    function reMint(address account, uint256 tokenId, uint256 amount, bytes memory metaData) external onlyOwner {
+        require(_tokenDatas[tokenId].alreadySet, "Data not set yet");
+        super._mint(account, tokenId, amount, metaData);
+        emit ReMint(tokenId, account, amount, metaData);
     }
 
     function getConfidentialData(
@@ -64,8 +60,8 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes32 publicKey,
         bytes calldata signature
     ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[4] memory) {
-        if (balanceOf(msg.sender, tokenId) <= 0) {
-            revert RequirePositiveBalance(tokenId);
+        if (balanceOf(msg.sender, tokenId) < 1) {
+            revert RequireOneToken(tokenId);
         }
         // Create an array to hold the re-encrypted data
         bytes[4] memory reencryptedData;

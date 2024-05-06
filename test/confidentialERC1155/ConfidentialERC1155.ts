@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { FhevmInstance } from "fhevmjs";
 import { ethers } from "hardhat";
 
 import { ConfidentialERC1155 } from "../../types";
@@ -17,7 +18,6 @@ describe("ConfidentialERC1155", function () {
     const contract = await deployEncryptedERC1155Fixture();
     this.contractAddress = await contract.getAddress();
     this.erc1155 = contract;
-    //contractInstance = contract;
     this.instances = await createInstances(this.contractAddress, ethers, this.signers);
   });
   // it("should mint the contract", async function () {
@@ -34,19 +34,23 @@ describe("ConfidentialERC1155", function () {
   //   expect(balance).to.equal(1000);
   // });
 
+  function encryptDataArray(instance: FhevmInstance, data: number[]): Uint8Array[] {
+    return data.map((x) => instance.encrypt64(x));
+  }
+
+  function decryptDataArray(instance: FhevmInstance, contractAddress: string, data: string[]): bigint[] {
+    return data.map((x) => instance.decrypt(contractAddress, x));
+  }
+
   it("should mint the contract", async function () {
-    const encryptedData1 = this.instances.alice.encrypt64(777);
-    const encryptedData2 = this.instances.alice.encrypt64(778);
-    const encryptedData3 = this.instances.alice.encrypt64(779);
-    const encryptedData4 = this.instances.alice.encrypt64(780);
-    const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+    const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
     try {
       const transaction = await this.erc1155.mintWithConfidentialData(
         this.signers.alice.address,
         0,
         1000,
         encryptedDataArray,
-        encryptedData1,
+        "0x",
       );
       await transaction.wait();
       const balance = await this.erc1155.balanceOf(this.signers.alice.address, 0);
@@ -56,26 +60,28 @@ describe("ConfidentialERC1155", function () {
     }
   });
 
-  it("should access confidential data", async function () {
-    const encryptedData1 = this.instances.alice.encrypt64(787);
-    const encryptedData2 = this.instances.alice.encrypt64(788);
-    const encryptedData3 = this.instances.alice.encrypt64(789);
-    const encryptedData4 = this.instances.alice.encrypt64(790);
-    const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+  it.only("should access confidential data", async function () {
+    // const encryptedData1 = this.instances.alice.encrypt64(787);
+    // const encryptedData2 = this.instances.alice.encrypt64(788);
+    // const encryptedData3 = this.instances.alice.encrypt64(789);
+    // const encryptedData4 = this.instances.alice.encrypt64(790);
+    // const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+    const clearData = [787, 788, 789, 790];
+    const encryptedDataArray = encryptDataArray(this.instances.alice, clearData);
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
       1000,
       encryptedDataArray,
-      encryptedData1,
+      "0x",
     );
     await transaction.wait();
 
     const token = this.instances.alice.getPublicKey(this.contractAddress)!;
 
     const returnedEncryptedData = await this.erc1155.getConfidentialData(0, token.publicKey, token.signature);
-    const data = this.instances.alice.decrypt(this.contractAddress, returnedEncryptedData[0]);
-    expect(data).to.equal(787);
+    const decryptedData = decryptDataArray(this.instances.alice, this.contractAddress, returnedEncryptedData);
+    expect(decryptedData).to.deep.equal([787, 788, 789, 790]);
   });
 
   // it("should mint the contract", async function () {
