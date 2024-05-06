@@ -14,7 +14,7 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
     event ReMint(uint256 tokenId, address indexed to, uint256 amount, bytes metaData);
 
     error DataAlreadySet(uint256 tokenId);
-    error RequireOneToken(uint256 tokenId);
+    error RequirePositiveBalance(uint256 tokenId);
 
     // Additional data associated with each token
     struct TokenData {
@@ -61,7 +61,7 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes calldata signature
     ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[4] memory) {
         if (balanceOf(msg.sender, tokenId) < 1) {
-            revert RequireOneToken(tokenId);
+            revert RequirePositiveBalance(tokenId);
         }
         // Create an array to hold the re-encrypted data
         bytes[4] memory reencryptedData;

@@ -1,4 +1,6 @@
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
+import exp from "constants";
 import { FhevmInstance } from "fhevmjs";
 import { ethers } from "hardhat";
 
@@ -8,7 +10,6 @@ import { getSigners, initSigners } from "../signers";
 import { deployEncryptedERC1155Fixture } from "./ConfidentialERC1155.fixture";
 
 describe("ConfidentialERC1155", function () {
-  //let contractInstance: ConfidentialERC1155;
   before(async function () {
     await initSigners();
     this.signers = await getSigners();
@@ -20,19 +21,6 @@ describe("ConfidentialERC1155", function () {
     this.erc1155 = contract;
     this.instances = await createInstances(this.contractAddress, ethers, this.signers);
   });
-  // it("should mint the contract", async function () {
-  //   const encryptedData = this.instances.alice.encrypt32(777);
-  //   const transaction = await this.erc1155.mintWithConfidentialData(
-  //     this.signers.alice.address,
-  //     0,
-  //     1000,
-  //     encryptedData,
-  //     encryptedData,
-  //   );
-  //   await transaction.wait();
-  //   const balance = await this.erc1155.balanceOf(this.signers.alice.address, 0);
-  //   expect(balance).to.equal(1000);
-  // });
 
   function encryptDataArray(instance: FhevmInstance, data: number[]): Uint8Array[] {
     return data.map((x) => instance.encrypt64(x));
@@ -42,7 +30,7 @@ describe("ConfidentialERC1155", function () {
     return data.map((x) => instance.decrypt(contractAddress, x));
   }
 
-  it("should mint the contract", async function () {
+  it("should mint token", async function () {
     const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
     try {
       const transaction = await this.erc1155.mintWithConfidentialData(
@@ -53,6 +41,20 @@ describe("ConfidentialERC1155", function () {
         "0x",
       );
       await transaction.wait();
+
+      // expect events to be emitted
+      await expect(transaction)
+        .to.emit(this.erc1155, "TransferSingle")
+        .withArgs(
+          this.signers.alice.address,
+          "0x0000000000000000000000000000000000000000",
+          this.signers.alice.address,
+          0,
+          1000,
+        );
+      await expect(transaction).to.emit(this.erc1155, "FirstMint").withArgs(0, this.signers.alice.address, 1000, "0x");
+
+      // check balance
       const balance = await this.erc1155.balanceOf(this.signers.alice.address, 0);
       expect(balance).to.equal(1000);
     } catch (e) {
@@ -60,12 +62,7 @@ describe("ConfidentialERC1155", function () {
     }
   });
 
-  it.only("should access confidential data", async function () {
-    // const encryptedData1 = this.instances.alice.encrypt64(787);
-    // const encryptedData2 = this.instances.alice.encrypt64(788);
-    // const encryptedData3 = this.instances.alice.encrypt64(789);
-    // const encryptedData4 = this.instances.alice.encrypt64(790);
-    // const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+  it("should access confidential data", async function () {
     const clearData = [787, 788, 789, 790];
     const encryptedDataArray = encryptDataArray(this.instances.alice, clearData);
     const transaction = await this.erc1155.mintWithConfidentialData(
@@ -84,51 +81,15 @@ describe("ConfidentialERC1155", function () {
     expect(decryptedData).to.deep.equal([787, 788, 789, 790]);
   });
 
-  // it("should mint the contract", async function () {
-  //   const encryptedData = this.instances.alice.encrypt32(777);
-  //   const transaction = await this.erc1155.mintWithConfidentialData(
-  //     this.signers.alice.address,
-  //     0,
-  //     1000,
-  //     encryptedData,
-  //     encryptedData,
-  //   );
-  //   await transaction.wait();
-  //   const balance = await this.erc1155.balanceOf(this.signers.alice.address, 0);
-  //   expect(balance).to.equal(1000);
-  // });
-
-  // it("should access confidential data", async function () {
-  //   const encryptedData = this.instances.alice.encrypt32(787);
-  //   const transaction = await this.erc1155.mintWithConfidentialData(
-  //     this.signers.alice.address,
-  //     0,
-  //     1000,
-  //     encryptedData,
-  //     encryptedData,
-  //   );
-  //   await transaction.wait();
-
-  //   const token = this.instances.alice.getPublicKey(this.contractAddress)!;
-
-  //   const returnedEncryptedData = await this.erc1155.getConfidentialData(0, token.publicKey, token.signature);
-  //   const data = this.instances.alice.decrypt(this.contractAddress, returnedEncryptedData);
-  //   expect(data).to.equal(787);
-  // });
-
   it("should not access confidential data", async function () {
-    //    const encryptedData = this.instances.alice.encrypt32(787);
-    const encryptedData1 = this.instances.alice.encrypt64(787);
-    const encryptedData2 = this.instances.alice.encrypt64(788);
-    const encryptedData3 = this.instances.alice.encrypt64(789);
-    const encryptedData4 = this.instances.alice.encrypt64(790);
-    const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+    const clearData = [787, 788, 789, 790];
+    const encryptedDataArray = encryptDataArray(this.instances.alice, clearData);
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
       1000,
       encryptedDataArray,
-      encryptedData1,
+      "0x",
     );
     await transaction.wait();
 
@@ -137,91 +98,85 @@ describe("ConfidentialERC1155", function () {
     await expect(bobErc1155.getConfidentialData(0, tokenBob.publicKey, tokenBob.signature))
       .to.be.revertedWithCustomError(bobErc1155, "RequirePositiveBalance")
       .withArgs(0);
-    //const returnedEncryptedData = await bobErc1155.getConfidentialData(0, tokenBob.publicKey, tokenBob.signature);
-    //const data = this.instances.bob.decrypt(this.contractAddress, returnedEncryptedData);
-    //expect(data).to.equal(0);
   });
 
-  it("should not re-mint already set confidential data", async function () {
-    //    const encryptedData1 = this.instances.alice.encrypt32(787);
-    const encryptedData1 = this.instances.alice.encrypt64(787);
-    const encryptedData2 = this.instances.alice.encrypt64(788);
-    const encryptedData3 = this.instances.alice.encrypt64(789);
-    const encryptedData4 = this.instances.alice.encrypt64(790);
-    const encryptedDataArray1 = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+  it("should not set already set confidential data", async function () {
+    const clearData1 = [787, 788, 789, 790];
+    const encryptedDataArray1 = encryptDataArray(this.instances.alice, clearData1);
     const transaction1 = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
       1000,
       encryptedDataArray1,
-      encryptedData1,
+      "0x",
     );
-    console.log("yoyo");
     await transaction1.wait();
-    console.log("yoyo");
 
-    const encryptedDataArray2 = [encryptedData4, encryptedData3, encryptedData2, encryptedData1];
+    const clearData2 = [687, 688, 689, 690];
+    const encryptedDataArray2 = encryptDataArray(this.instances.alice, clearData2);
 
     try {
-      await this.erc1155.mintWithConfidentialData(
-        this.signers.alice.address,
-        0,
-        500,
-        encryptedDataArray2,
-        encryptedData2,
-      );
+      await this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedDataArray2, "0x");
     } catch (e) {
       expect((e as Error).toString().substring(0, 67)).to.be.equal(
         "ProviderError: rpc error: code = Unknown desc = execution reverted:",
       );
-      //   (e as Error).toString().substring(0, 67) ===
-      //     "ProviderError: rpc error: code = Unknown desc = execution reverted",
-      // ).to.be.true;
     }
-    // await expect(
-    //   this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2),
-    // ).to.be.revertedWith("Data Already Set");
-
-    // await expect(
-    //   this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2),
-    // )
-    //   .to.be.revertedWithCustomError(this.erc1155, "DataAlreadySet")
-    //   .withArgs(0);
-
-    // await expect(transaction2).to.be.revertedWith("Confidential data already set for this tokenId");
-    // await (await transaction2).wait();
-    // await expect(
-    //   this.erc1155.mintWithConfidentialData(this.signers.alice.address, 0, 500, encryptedData2, encryptedData2),
-    // ).to.be.revertedWith("Confidential data already set for this tokenId");
-    //await transaction2.wait();
 
     const balance = await this.erc1155.balanceOf(this.signers.alice.address, 0);
     expect(balance).to.equal(1000);
+  });
 
-    // const token = this.instances.alice.getPublicKey(this.contractAddress)!;
+  it("should re-mint token", async function () {
+    const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
+    const transaction1 = await this.erc1155.mintWithConfidentialData(
+      this.signers.alice.address,
+      0,
+      1000,
+      encryptedDataArray,
+      "0x",
+    );
+    await transaction1.wait();
+    const balance1 = await this.erc1155.balanceOf(this.signers.alice.address, 0);
+    expect(balance1).to.equal(1000);
 
-    // const returnedEncryptedData = await this.erc1155.getConfidentialData(0, token.publicKey, token.signature);
-    // const data = this.instances.alice.decrypt(this.contractAddress, returnedEncryptedData);
-    // expect(data).to.equal(787);
+    // re-mint to same address
+    const transaction2 = await this.erc1155.reMint(this.signers.alice.address, 0, 500, "0x");
+    await transaction2.wait();
+    const balance2 = await this.erc1155.balanceOf(this.signers.alice.address, 0);
+    expect(balance2).to.equal(1500);
+
+    // re-mint to different address
+    const transaction3 = await this.erc1155.reMint(this.signers.bob.address, 0, 800, "0x");
+    await transaction3.wait();
+    const balance3 = await this.erc1155.balanceOf(this.signers.bob.address, 0);
+    expect(balance3).to.equal(800);
+
+    // expect events to be emitted
+    await expect(transaction3)
+      .to.emit(this.erc1155, "TransferSingle")
+      .withArgs(
+        this.signers.alice.address,
+        "0x0000000000000000000000000000000000000000",
+        this.signers.bob.address,
+        0,
+        800,
+      );
+    await expect(transaction3).to.emit(this.erc1155, "ReMint").withArgs(0, this.signers.bob.address, 800, "0x");
   });
 
   it("should transfer tokens between two users", async function () {
-    //const encryptedData = this.instances.alice.encrypt32(787);
-    const encryptedData1 = this.instances.alice.encrypt64(787);
-    const encryptedData2 = this.instances.alice.encrypt64(788);
-    const encryptedData3 = this.instances.alice.encrypt64(789);
-    const encryptedData4 = this.instances.alice.encrypt64(790);
-    const encryptedDataArray = [encryptedData1, encryptedData2, encryptedData3, encryptedData4];
+    const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
       2000,
       encryptedDataArray,
-      encryptedData1,
+      "0x",
     );
     await transaction.wait();
 
-    const tx = await this.erc1155.safeTransferFrom(
+    const transfer = await this.erc1155.safeTransferFrom(
       this.signers.alice.address,
       this.signers.bob.address,
       0,
@@ -229,23 +184,18 @@ describe("ConfidentialERC1155", function () {
       "0x",
       {},
     );
-    await tx.wait();
+    await transfer.wait();
 
+    // expect event to be emitted
+    await expect(transfer)
+      .to.emit(this.erc1155, "TransferSingle")
+      .withArgs(this.signers.alice.address, this.signers.alice.address, this.signers.bob.address, 0, 500);
+
+    // check balance
     const balanceAlice = await this.erc1155.balanceOf(this.signers.alice.address, 0);
     expect(balanceAlice).to.equal(1500);
 
     const balanceBob = await this.erc1155.balanceOf(this.signers.bob.address, 0);
     expect(balanceBob).to.equal(500);
-
-    // 	const bobErc20 = this.erc20.connect(this.signers.bob);
-
-    // const tokenBob = this.instances.bob.getPublicKey(this.contractAddress)!;
-
-    // const encryptedBalanceBob = await bobErc20.balanceOf(this.signers.bob, tokenBob.publicKey, tokenBob.signature);
-
-    // // Decrypt the balance
-    // const balanceBob = this.instances.bob.decrypt(this.contractAddress, encryptedBalanceBob);
-
-    // expect(balanceBob).to.equal(1337);
   });
 });
