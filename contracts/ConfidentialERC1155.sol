@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.20;
 
 import "fhevm/abstracts/Reencrypt.sol";
 import "fhevm/lib/TFHE.sol";
@@ -19,7 +19,7 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
     // Additional data associated with each token
     struct TokenData {
         euint64[4] confidentialData;
-        bool alreadySet;
+        address tokenOwner;
     }
 
     // Mapping from token ID to additional data
@@ -33,8 +33,8 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         uint256 amount,
         bytes[] calldata confidentialData,
         bytes memory metaData
-    ) external onlyOwner {
-        require(!_tokenDatas[tokenId].alreadySet, "Data Already Set");
+    ) external {
+        require(_tokenDatas[tokenId].tokenOwner == address(0), "Data Already Set");
         require(confidentialData.length == 4, "Must provide four encrypted integers");
         super._mint(account, tokenId, amount, metaData);
         _tokenDatas[tokenId] = TokenData(
@@ -44,16 +44,16 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
                 TFHE.asEuint64(confidentialData[2]),
                 TFHE.asEuint64(confidentialData[3])
             ],
-            true
+            msg.sender
         );
         emit FirstMint(tokenId, account, amount, metaData);
     }
 
-    function reMint(address account, uint256 tokenId, uint256 amount, bytes memory metaData) external onlyOwner {
-        require(_tokenDatas[tokenId].alreadySet, "Data not set yet");
-        super._mint(account, tokenId, amount, metaData);
-        emit ReMint(tokenId, account, amount, metaData);
-    }
+    // function reMint(address account, uint256 tokenId, uint256 amount, bytes memory metaData) external {
+    //     require(_tokenDatas[tokenId].alreadySet, "Data not set yet");
+    //     super._mint(account, tokenId, amount, metaData);
+    //     emit ReMint(tokenId, account, amount, metaData);
+    // }
 
     function getConfidentialData(
         uint256 tokenId,
@@ -72,20 +72,3 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         return reencryptedData;
     }
 }
-//     function getConfidentialData(
-//         uint256 tokenId,
-//         bytes32 publicKey,
-//         bytes calldata signature
-//     ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[4] memory) {
-//         if (balanceOf(msg.sender, tokenId) <= 0) {
-//             revert RequirePositiveBalance(tokenId);
-//         }
-//         //require(balanceOf(msg.sender, tokenId) > 0, "Require positive balance to access confidential data");
-//         return TFHE.reencrypt(_tokenDatas[tokenId].x, publicKey, 0);
-//     }
-
-//     // Function to get the additional data associated with a token
-//     function getTokenData(uint256 tokenId) external view returns (TokenData memory) {
-//         return _tokenDatas[tokenId];
-//     }
-// }

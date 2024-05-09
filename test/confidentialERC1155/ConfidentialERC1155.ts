@@ -1,10 +1,7 @@
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
-import exp from "constants";
 import { FhevmInstance } from "fhevmjs";
 import { ethers } from "hardhat";
 
-import { ConfidentialERC1155 } from "../../types";
 import { createInstances } from "../instance";
 import { getSigners, initSigners } from "../signers";
 import { deployEncryptedERC1155Fixture } from "./ConfidentialERC1155.fixture";

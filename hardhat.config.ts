@@ -11,9 +11,7 @@ import { resolve } from "path";
 import * as path from "path";
 
 import "./tasks/accounts";
-import "./tasks/deployERC20";
 import "./tasks/getEthereumAddress";
-import "./tasks/mint";
 
 function getAllSolidityFiles(dir: string, fileList: string[] = []): string[] {
   fs.readdirSync(dir).forEach((file) => {
@@ -152,7 +150,7 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.22",
+    version: "0.8.20",
     settings: {
       metadata: {
         // Not including the metadata hash
