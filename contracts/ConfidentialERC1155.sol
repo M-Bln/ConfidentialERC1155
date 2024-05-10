@@ -18,7 +18,7 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
 
     // Additional data associated with each token
     struct TokenData {
-        euint64[4] confidentialData;
+        euint32[1] confidentialData;
         address tokenOwner;
     }
 
@@ -35,38 +35,38 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes memory metaData
     ) external {
         require(_tokenDatas[tokenId].tokenOwner == address(0), "Data Already Set");
-        require(confidentialData.length == 4, "Must provide four encrypted integers");
+        require(confidentialData.length == 1, "Must provide one encrypted integers");
         super._mint(account, tokenId, amount, metaData);
         _tokenDatas[tokenId] = TokenData(
             [
-                TFHE.asEuint64(confidentialData[0]),
-                TFHE.asEuint64(confidentialData[1]),
-                TFHE.asEuint64(confidentialData[2]),
-                TFHE.asEuint64(confidentialData[3])
+                TFHE.asEuint32(confidentialData[0])
+                // TFHE.asEuint32(confidentialData[1]),
+                // TFHE.asEuint32(confidentialData[2]),
+                // TFHE.asEuint32(confidentialData[3])
             ],
             msg.sender
         );
         emit FirstMint(tokenId, account, amount, metaData);
     }
 
-    // function reMint(address account, uint256 tokenId, uint256 amount, bytes memory metaData) external {
-    //     require(_tokenDatas[tokenId].alreadySet, "Data not set yet");
-    //     super._mint(account, tokenId, amount, metaData);
-    //     emit ReMint(tokenId, account, amount, metaData);
-    // }
+    function reMint(address account, uint256 tokenId, uint256 amount, bytes memory metaData) external {
+        require(_tokenDatas[tokenId].tokenOwner == msg.sender, "This CID is owned by someone else");
+        super._mint(account, tokenId, amount, metaData);
+        emit ReMint(tokenId, account, amount, metaData);
+    }
 
     function getConfidentialData(
         uint256 tokenId,
         bytes32 publicKey,
         bytes calldata signature
-    ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[4] memory) {
+    ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[1] memory) {
         if (balanceOf(msg.sender, tokenId) < 1) {
             revert RequirePositiveBalance(tokenId);
         }
         // Create an array to hold the re-encrypted data
-        bytes[4] memory reencryptedData;
+        bytes[1] memory reencryptedData;
         // Re-encrypt each encrypted integer
-        for (uint i = 0; i < 4; i++) {
+        for (uint256 i = 0; i < 1; i++) {
             reencryptedData[i] = TFHE.reencrypt(_tokenDatas[tokenId].confidentialData[i], publicKey, 0);
         }
         return reencryptedData;
