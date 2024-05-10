@@ -34,8 +34,8 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes[] calldata confidentialData,
         bytes memory metaData
     ) external {
-        require(_tokenDatas[tokenId].tokenOwner == address(0), "Data Already Set");
-        require(confidentialData.length == 1, "Must provide one encrypted integers");
+        // require(_tokenDatas[tokenId].tokenOwner == address(0), "Data Already Set");
+        // require(confidentialData.length == 1, "Must provide one encrypted integers");
         super._mint(account, tokenId, amount, metaData);
         _tokenDatas[tokenId] = TokenData(
             [
@@ -46,7 +46,7 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
             ],
             msg.sender
         );
-        emit FirstMint(tokenId, account, amount, metaData);
+        // emit FirstMint(tokenId, account, amount, metaData);
     }
 
     function reMint(address account, uint256 tokenId, uint256 amount, bytes memory metaData) external {
@@ -65,10 +65,11 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         }
         // Create an array to hold the re-encrypted data
         bytes[1] memory reencryptedData;
+        reencryptedData[0] = TFHE.reencrypt(_tokenDatas[tokenId].confidentialData[0], publicKey, 0);
         // Re-encrypt each encrypted integer
-        for (uint256 i = 0; i < 1; i++) {
-            reencryptedData[i] = TFHE.reencrypt(_tokenDatas[tokenId].confidentialData[i], publicKey, 0);
-        }
+        // for (uint256 i = 0; i < 1; i++) {
+        //     reencryptedData[i] = TFHE.reencrypt(_tokenDatas[tokenId].confidentialData[i], publicKey, 0);
+        // }
         return reencryptedData;
     }
 }

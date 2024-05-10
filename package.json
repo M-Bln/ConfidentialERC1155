@@ -18,7 +18,7 @@
     "@types/chai": "^4.3.16",
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^18.19.31",
+    "@types/node": "^18.19.33",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "chai": "^4.4.1",
@@ -92,13 +92,13 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.2",
-    "@tanstack/react-query": "^5.34.2",
+    "@tanstack/react-query": "^5.35.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-query": "^3.39.3",
     "react-scripts": "^5.0.1",
-    "viem": "^2.9.31",
-    "wagmi": "^2.8.1"
+    "viem": "^2.10.3",
+    "wagmi": "^2.8.4"
   },
   "browserslist": {
     "production": [
