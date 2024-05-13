@@ -20,7 +20,7 @@ describe("ConfidentialERC1155", function () {
   });
 
   function encryptDataArray(instance: FhevmInstance, data: number[]): Uint8Array[] {
-    return data.map((x) => instance.encrypt32(x));
+    return data.map((x) => instance.encrypt64(x));
   }
 
   function decryptDataArray(instance: FhevmInstance, contractAddress: string, data: string[]): bigint[] {
@@ -28,7 +28,7 @@ describe("ConfidentialERC1155", function () {
   }
 
   it("should mint token", async function () {
-    const encryptedDataArray = encryptDataArray(this.instances.alice, [777]);
+    const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
     try {
       const transaction = await this.erc1155.mintWithConfidentialData(
         this.signers.alice.address,
@@ -60,7 +60,7 @@ describe("ConfidentialERC1155", function () {
   });
 
   it("should access confidential data", async function () {
-    const clearData = [787];
+    const clearData = [777, 778, 779, 780];
     const encryptedDataArray = encryptDataArray(this.instances.alice, clearData);
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
@@ -75,11 +75,11 @@ describe("ConfidentialERC1155", function () {
 
     const returnedEncryptedData = await this.erc1155.getConfidentialData(0, token.publicKey, token.signature);
     const decryptedData = decryptDataArray(this.instances.alice, this.contractAddress, returnedEncryptedData);
-    expect(decryptedData).to.deep.equal([787]);
+    expect(decryptedData).to.deep.equal([777, 778, 779, 780]);
   });
 
   it("should not access confidential data", async function () {
-    const clearData = [787];
+    const clearData = [777, 778, 779, 780];
     const encryptedDataArray = encryptDataArray(this.instances.alice, clearData);
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
@@ -98,7 +98,7 @@ describe("ConfidentialERC1155", function () {
   });
 
   it("should not set already set confidential data", async function () {
-    const clearData1 = [787];
+    const clearData1 = [777, 778, 779, 780];
     const encryptedDataArray1 = encryptDataArray(this.instances.alice, clearData1);
     const transaction1 = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
@@ -125,7 +125,7 @@ describe("ConfidentialERC1155", function () {
   });
 
   it("should re-mint token", async function () {
-    const encryptedDataArray = encryptDataArray(this.instances.alice, [777]);
+    const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
     const transaction1 = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
@@ -163,7 +163,7 @@ describe("ConfidentialERC1155", function () {
   });
 
   it("should transfer tokens between two users", async function () {
-    const encryptedDataArray = encryptDataArray(this.instances.alice, [777]);
+    const encryptedDataArray = encryptDataArray(this.instances.alice, [777, 778, 779, 780]);
     const transaction = await this.erc1155.mintWithConfidentialData(
       this.signers.alice.address,
       0,
