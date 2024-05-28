@@ -1,4 +1,217 @@
-# Hardhat Template [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Hardhat][hardhat-badge]][hardhat] [![License: MIT][license-badge]][license]
+# ConfidentialERC1155
+
+ConfidentialERC1155 is a smart contract that extends the standard ERC1155 to include confidential data associated with
+each token type. This allows users to mint tokens with encrypted data that can only be accessed by the token holders,
+utilizing fully homomorphic encryption (FHE) tools provided by the fhevm.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Usage](#usage)
+- [Commands](#commands)
+- [License](#license)
+
+## Introduction
+
+ConfidentialERC1155 is designed to manage confidential data on the blockchain, enabling secure and private data handling
+in decentralized applications. This project particularly focuses on use cases where the confidential data can serve as
+encryption keys for files stored in decentralized storage systems like IPFS.
+
+## Features
+
+- **Extended ERC1155**: Inherits the standard ERC1155 functionalities.
+- **Confidential Data**: Associates encrypted confidential data with each token type.
+- **MintWithConfidentialData**: New mint function that includes encrypted data.
+- **reMint**: Allows re-minting of existing tokens by the owner with the same encrypted data.
+
+## Getting Started
+
+### Prerequisites
+
+- Install [docker](https://docs.docker.com/engine/install/)
+- Install [pnpm](https://pnpm.io/installation)
+
+Before running any command, create a `.env` file and set a BIP-39 compatible mnemonic as an environment variable. Follow
+the example in `.env.example`. If you don't have a mnemonic, use [this website](https://iancoleman.io/bip39/) to
+generate one.
+
+### Installation
+
+Install the dependencies:
+
+```sh
+pnpm install
+```
+
+### Usage
+
+#### Start fhevm
+
+Start a local fhevm docker container that includes everything needed to deploy FHE encrypted smart contracts:
+
+```sh
+# In one terminal, keep it open to view node logs
+pnpm fhevm:start
+```
+
+To stop the container:
+
+```sh
+pnpm fhevm:stop
+```
+
+#### Compile
+
+Compile the smart contracts with Hardhat:
+
+```sh
+pnpm compile
+```
+
+#### TypeChain
+
+Compile the smart contracts and generate TypeChain bindings:
+
+```sh
+pnpm typechain
+```
+
+#### List Accounts
+
+List all derived Ethereum addresses from the mnemonic in `.env` file:
+
+```sh
+pnpm task:accounts
+```
+
+#### Get Some Native Coins
+
+Get coins for the first 5 addresses derived from the mnemonic in `.env` file:
+
+```sh
+pnpm fhevm:faucet
+```
+
+<details>
+  <summary>To get the first derived address from mnemonic</summary>
+
+```sh
+pnpm task:getEthereumAddress
+```
+
+</details>
+
+#### Deploy
+
+Deploy the ERC20 to the local network:
+
+```sh
+pnpm deploy:contracts
+```
+
+<details>
+  <summary>Error: cannot get the transaction for EncryptedERC20's previous deployment</summary>
+  
+  Delete the local folder in deployments:
+
+```bash
+rm -r deployments/local/
+```
+
+</details>
+
+<details>
+  <summary>Info: by default, the local network is used</summary>
+  
+  You can change the network in the [hardhat config file](./hardhat.config.ts).
+
+</details>
+
+#### Mint
+
+Run the `mint` task on the local network:
+
+```sh
+pnpm task:mint --network local --mint 1000
+```
+
+#### Test
+
+Run the tests with Hardhat:
+
+```sh
+pnpm test
+```
+
+#### Lint Solidity
+
+Lint the Solidity code:
+
+```sh
+pnpm lint:sol
+```
+
+#### Lint TypeScript
+
+Lint the TypeScript code:
+
+```sh
+pnpm lint:ts
+```
+
+#### Report Gas
+
+See the gas usage per unit test and average gas per method call:
+
+```sh
+REPORT_GAS=true pnpm test
+```
+
+#### Clean
+
+Delete the smart contract artifacts, coverage reports, and the Hardhat cache:
+
+```sh
+pnpm clean
+```
+
+#### Tasks
+
+##### Deploy EncryptedERC20
+
+Deploy a new instance of the EncryptedERC20 contract via a task:
+
+```sh
+pnpm task:deployERC20
+```
+
+#### Mocked Mode
+
+The mocked mode allows faster testing and the ability to analyze coverage of the tests. In this mocked version,
+encrypted types are not really encrypted, and the tests are run on the original version of the EVM, on a local Hardhat
+network instance.
+
+```sh
+pnpm test:mock
+```
+
+To analyze the coverage of the tests (in mocked mode):
+
+```sh
+pnpm coverage:mock
+```
+
+Then open the file `coverage/index.html`.
+
+## License
+
+This project is licensed under MIT.
+
+<!-- # Hardhat Template [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Hardhat][hardhat-badge]][hardhat] [![License: MIT][license-badge]][license]
 
 [gitpod]: https://gitpod.io/#https://github.com/zama-ai/fhevm-hardhat-template
 [gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
@@ -46,7 +259,7 @@ This template comes with sensible default configurations in the following files:
 ├── .solcover.js
 ├── .solhint.json
 └── hardhat.config.ts
-```
+````
 
 ### VSCode Integration
 
@@ -275,4 +488,4 @@ Please check the [fhevm-go](https://github.com/zama-ai/fhevm-go) repository to b
 
 ## License
 
-This project is licensed under MIT.
+This project is licensed under MIT. -->
