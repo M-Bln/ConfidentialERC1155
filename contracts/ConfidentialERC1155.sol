@@ -16,14 +16,8 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
     error DataAlreadySet(uint256 tokenId);
     error RequirePositiveBalance(uint256 tokenId);
 
-    // Additional data associated with each token
-    // struct TokenData {
-    //     euint32[1] confidentialData;
-    //     address tokenOwner;
-    // }
-
     struct TokenData {
-        euint64[4] confidentialData;
+        euint32[8] confidentialData;
         address tokenOwner;
     }
 
@@ -40,26 +34,23 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         bytes memory metaData
     ) external {
         require(_tokenDatas[tokenId].tokenOwner == address(0), "Data Already Set");
-        require(confidentialData.length == 4, "Must provide confidential data of length four");
+        require(confidentialData.length == 8, "Must provide confidential data of length four");
+
         super._mint(account, tokenId, amount, metaData);
+
         _tokenDatas[tokenId] = TokenData(
             [
-                TFHE.asEuint64(confidentialData[0]),
-                TFHE.asEuint64(confidentialData[1]),
-                TFHE.asEuint64(confidentialData[2]),
-                TFHE.asEuint64(confidentialData[3])
+                TFHE.asEuint32(confidentialData[0]),
+                TFHE.asEuint32(confidentialData[1]),
+                TFHE.asEuint32(confidentialData[2]),
+                TFHE.asEuint32(confidentialData[3]),
+                TFHE.asEuint32(confidentialData[4]),
+                TFHE.asEuint32(confidentialData[5]),
+                TFHE.asEuint32(confidentialData[6]),
+                TFHE.asEuint32(confidentialData[7])
             ],
             msg.sender
         );
-        // _tokenDatas[tokenId] = TokenData(
-        //     [
-        //         TFHE.asEuint32(confidentialData[0])
-        //         // TFHE.asEuint32(confidentialData[1]),
-        //         // TFHE.asEuint32(confidentialData[2]),
-        //         // TFHE.asEuint32(confidentialData[3])
-        //     ],
-        //     msg.sender
-        // );
         emit FirstMint(tokenId, account, amount, metaData);
     }
 
@@ -73,17 +64,17 @@ contract ConfidentialERC1155 is ERC1155, Ownable, Reencrypt {
         uint256 tokenId,
         bytes32 publicKey,
         bytes calldata signature
-    ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[4] memory) {
+    ) public view virtual onlySignedPublicKey(publicKey, signature) returns (bytes[8] memory) {
         if (balanceOf(msg.sender, tokenId) < 1) {
             revert RequirePositiveBalance(tokenId);
         }
-        // Create an array to hold the re-encrypted data
-        bytes[4] memory reencryptedData;
-        // reencryptedData[0] = TFHE.reencrypt(_tokenDatas[tokenId].confidentialData[0], publicKey, 0);
-        // Re-encrypt each encrypted integer
-        for (uint256 i = 0; i < 4; i++) {
+
+        bytes[8] memory reencryptedData;
+
+        for (uint256 i = 0; i < 8; i++) {
             reencryptedData[i] = TFHE.reencrypt(_tokenDatas[tokenId].confidentialData[i], publicKey, 0);
         }
+
         return reencryptedData;
     }
 }
