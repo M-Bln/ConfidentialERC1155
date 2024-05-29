@@ -1,7 +1,7 @@
 # ConfidentialERC1155
 
 ConfidentialERC1155 is a smart contract that extends the standard ERC1155 to include confidential data associated with
-each token type. This allows users to mint tokens with encrypted data that can only be accessed by the token holders,
+each token ID. This allows users to mint tokens with encrypted data that can only be accessed by the token holders,
 utilizing fully homomorphic encryption (FHE) tools provided by the fhevm.
 
 ## Table of Contents
@@ -66,7 +66,7 @@ pnpm fhevm:stop
 
 #### Compile
 
-Compile the smart contracts with Hardhat:
+Compile the smart contract with Hardhat:
 
 ```sh
 pnpm compile
@@ -74,7 +74,7 @@ pnpm compile
 
 #### TypeChain
 
-Compile the smart contracts and generate TypeChain bindings:
+Compile the smart contract and generate TypeChain bindings:
 
 ```sh
 pnpm typechain
@@ -107,7 +107,7 @@ pnpm task:getEthereumAddress
 
 #### Deploy
 
-Deploy the ERC20 to the local network:
+Deploy the ConfidentialERC1155 to the local network:
 
 ```sh
 pnpm deploy:contracts
@@ -130,14 +130,6 @@ rm -r deployments/local/
   You can change the network in the [hardhat config file](./hardhat.config.ts).
 
 </details>
-
-#### Mint
-
-Run the `mint` task on the local network:
-
-```sh
-pnpm task:mint --network local --mint 1000
-```
 
 #### Test
 
@@ -177,16 +169,6 @@ Delete the smart contract artifacts, coverage reports, and the Hardhat cache:
 
 ```sh
 pnpm clean
-```
-
-#### Tasks
-
-##### Deploy EncryptedERC20
-
-Deploy a new instance of the EncryptedERC20 contract via a task:
-
-```sh
-pnpm task:deployERC20
 ```
 
 #### Mocked Mode
